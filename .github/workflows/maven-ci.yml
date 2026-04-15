@@ -1,6 +1,5 @@
 name: Maven CI
 
-# Triggers manually or on push or pull request on the main branch
 on:
   workflow_dispatch:
   push:
@@ -38,14 +37,28 @@ jobs:
         name: Jacoco coverage results
         path: target/site/jacoco
 
+    - name: Cache build
+      uses: actions/cache@v3
+      with:
+        key: cached-build-${{github.sha}}
+        path: .
+
   update_dependence_graph:
+
+    needs: [maven_test]
 
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
 
     steps:
+
+    - name: Restore cached build
+      uses: actions/cache@v3
+      with:
+        key: cached-build-${{github.sha}}
+        path: .
 
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@v3
